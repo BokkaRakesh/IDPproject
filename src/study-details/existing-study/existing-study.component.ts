@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { StudyService } from '../study.service';
@@ -14,14 +14,9 @@ import saveAs from 'file-saver';
 })
 
 export class ExistingStudyComponent implements OnInit {
-  selectedOption: string = 'new'; // Default selection for form mode
+  @Input() mode: 'new' | 'existing' = 'existing';
   searchQuery: string = ''; // Query for search functionality
   studies: any[] = []; // Data for existing studies (to populate TreeTable)
-  originalStudies: any[] = []; // Store original studies data to reset after filtering
-  expandedRowKeys: any = {}; // Keys for expanded rows in TreeTable
-  searchQuerySubject: BehaviorSubject<string> = new BehaviorSubject<string>(''); // RxJS Subject
-
-
   filteredStudies: any[] = []; // List of filtered studies based on the search query
   selectedStudy: any; // The selected study when a row is clicked
   studyForm!: FormGroup; // The reactive form to edit the selected study
@@ -30,7 +25,6 @@ export class ExistingStudyComponent implements OnInit {
     { label: 'In progress', value: 'inProgress' },
     { label: 'Complete', value: 'complete' },
   ];
-  studyData: any[] = []; // To hold all study records
 
   constructor(private studyService: StudyService, private fb:FormBuilder) {}
 
@@ -99,24 +93,29 @@ export class ExistingStudyComponent implements OnInit {
           status: formData[field.key],
           comment: formData[field.key + '_comment'],
         })),
-        createdAt:this.selectedStudy.createdAt,
+        createdAt: this.selectedStudy.createdAt,
         updatedAt: new Date(),
+        mode:this.mode
       };
-
-      // Save updated data (e.g., send it to a backend API)
+  
+      // Save updated data
       this.studyService.saveStudyData(updatedStudyData).subscribe({
         next: () => {
           alert('Study data updated successfully');
           this.saveToExcel(updatedStudyData); // Proceed to Excel creation
-          
+  
+          // Reset the form and hide it
+          this.studyForm.reset(); // Reset the form
+          this.selectedStudy = null; // Hide the form
         },
         error: (error) => {
-          alert('Error updated study data');
-          console.error('Error updated study data:', error);
-        }
+          alert('Error updating study data');
+          console.error('Error updating study data:', error);
+        },
       });
     }
   }
+  
     async saveToExcel(studyData: any) {
       try {
         const workbookBlob = await this.studyService.createExcelWorkbook(studyData);

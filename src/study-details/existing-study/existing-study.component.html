@@ -37,7 +37,7 @@
   </div>
 
   <!-- Editable Study Form (only visible when a study is selected) -->
-  <div *ngIf="studyForm" class="mt-4">
+  <div *ngIf="studyForm && selectedStudy !==null" class="mt-4">
     <div class="card shadow-sm">
       <div class="card-header bg-info text-white">
         <h5>Study Form for {{ selectedStudy?.studyId }}</h5>

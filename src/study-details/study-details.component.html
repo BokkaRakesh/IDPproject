@@ -30,6 +30,6 @@
 <!-- Existing Study Search and Table (only visible when 'existing' is selected) -->
 <div *ngIf="selectedOption === 'existing'" class="container mt-4">
   <!-- Search Box for filtering studies -->
-<app-existing-study></app-existing-study>
+<app-existing-study [mode]="'existing'"></app-existing-study>
 </div>
 

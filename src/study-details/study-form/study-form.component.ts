@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
@@ -18,6 +18,7 @@ import saveAs from 'file-saver';
 })
 export class StudyFormComponent implements OnInit {
   studyForm!: FormGroup;
+  @Input() mode: 'new' | 'existing' = 'new';
 
   statusOptions = [
     { label: 'Not yet started', value: 'notStarted' },
@@ -75,7 +76,8 @@ initlizeForm(){
           comment: formData[field.key + '_comment']
         })),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        mode:this.mode
       };
 
       // Save to backend or API

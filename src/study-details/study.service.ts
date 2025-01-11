@@ -64,26 +64,56 @@ export class StudyService {
   }
 
   // Save study data and update the studies list
+ 
   saveStudyData(studyData: any): Observable<void> {
     return new Observable<void>((observer) => {
       setTimeout(() => {
-        const studies = this.studiesSubject.value;
-
-        // Add new study data to the list with template fields if not already present
-        const newStudy = {
-          studyId: studyData.studyId,
-          fields: this.studyTemplate.fields,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          ...studyData, // Merge additional studyData properties
-        };
-
-        const updatedStudies = [...studies, newStudy];
-        this.studiesSubject.next(updatedStudies); // Update the BehaviorSubject
+        const updatedStudies = this.handleStudyData(studyData); // Delegating responsibility
+        this.studiesSubject.next(updatedStudies);
         observer.next();
         observer.complete();
       }, 500); // Simulated delay
     });
+  }
+
+  // Single Responsibility: Handles study data processing
+  private handleStudyData(studyData: any): any[] {
+    const studies = this.studiesSubject.value;
+
+    if (studyData.mode === 'existing') {
+      return this.updateExistingStudy(studies, studyData);
+    } else {
+      return this.addNewStudy(studies, studyData);
+    }
+  }
+
+  // Open/Closed: Update existing study logic
+  private updateExistingStudy(studies: any[], studyData: any): any[] {
+    const existingIndex = studies.findIndex((study) => study.studyId === studyData.studyId);
+
+    if (existingIndex > -1) {
+      studies[existingIndex] = {
+        ...studies[existingIndex],
+        ...studyData, // Merge updated data
+        updatedAt: new Date().toISOString(),
+      };
+    } else {
+      return this.addNewStudy(studies, studyData); // Fall back to adding a new study
+    }
+
+    return studies;
+  }
+
+  // Open/Closed: Add new study logic
+  private addNewStudy(studies: any[], studyData: any): any[] {
+    const newStudy = {
+      studyId: studyData.studyId,
+      fields: this.studyTemplate.fields,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...studyData, // Merge additional studyData properties
+    };
+    return [...studies, newStudy];
   }
   getSelectedStudy(): any {
     return this.selectedStudySubject.value; // Return the current study data
