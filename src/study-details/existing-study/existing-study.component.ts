@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } 
 import { BehaviorSubject } from 'rxjs';
 import { StudyService } from '../study.service';
 import { CommonModule } from '@angular/common';
+import saveAs from 'file-saver';
 
 @Component({
   selector: 'app-existing-study',
@@ -98,14 +99,31 @@ export class ExistingStudyComponent implements OnInit {
           status: formData[field.key],
           comment: formData[field.key + '_comment'],
         })),
+        createdAt:this.selectedStudy.createdAt,
         updatedAt: new Date(),
       };
 
       // Save updated data (e.g., send it to a backend API)
-      this.studyService.saveStudyData(updatedStudyData);
-      alert('Study data updated successfully');
+      this.studyService.saveStudyData(updatedStudyData).subscribe({
+        next: () => {
+          alert('Study data updated successfully');
+          this.saveToExcel(updatedStudyData); // Proceed to Excel creation
+          
+        },
+        error: (error) => {
+          alert('Error updated study data');
+          console.error('Error updated study data:', error);
+        }
+      });
     }
   }
-  
+    async saveToExcel(studyData: any) {
+      try {
+        const workbookBlob = await this.studyService.createExcelWorkbook(studyData);
+        saveAs(workbookBlob, `Study_${studyData.studyId}_${new Date().toISOString()}.xlsx`);
+      } catch (error) {
+        console.error('Error generating Excel file:', error);
+      }
+    }
 }
 

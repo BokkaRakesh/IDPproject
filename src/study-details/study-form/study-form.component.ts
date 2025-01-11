@@ -52,16 +52,18 @@ export class StudyFormComponent implements OnInit {
   constructor(private fb: FormBuilder, private studyService: StudyService) {}
 
   ngOnInit() {
-    this.studyForm = this.fb.group({
-      studyId: ['', Validators.required],
-      ...this.fields.reduce((acc: Record<string, any>, field) => {
-        acc[field.key] = ['notStarted', Validators.required];
-        acc[field.key + '_comment'] = [''];
-        return acc;
-      }, {})
-    });
+   this.initlizeForm();
   }
-
+initlizeForm(){
+  this.studyForm = this.fb.group({
+    studyId: ['', Validators.required],
+    ...this.fields.reduce((acc: Record<string, any>, field) => {
+      acc[field.key] = ['notStarted', Validators.required];
+      acc[field.key + '_comment'] = [''];
+      return acc;
+    }, {})
+  });
+}
   onSubmit() {
     if (this.studyForm.valid) {
       const formData = this.studyForm.value;
@@ -81,6 +83,8 @@ export class StudyFormComponent implements OnInit {
         next: () => {
           alert('Study data saved successfully');
           this.saveToExcel(newStudyData); // Proceed to Excel creation
+          this.studyForm.reset();
+          this.initlizeForm();
         },
         error: (error) => {
           alert('Error saving study data');
