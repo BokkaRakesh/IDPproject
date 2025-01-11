@@ -1,22 +1,18 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { StudyFormComponent } from './study-form/study-form.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { StudyService } from './study.service';
-import { ExistingStudyComponent } from './existing-study/existing-study.component';
+import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
+import { StudyService } from '../study.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-study-details',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, StudyFormComponent, ExistingStudyComponent],
-  templateUrl: './study-details.component.html',
-  styleUrls: ['./study-details.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  selector: 'app-existing-study',
+  standalone:true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  templateUrl: './existing-study.component.html',
+  styleUrl: './existing-study.component.scss'
 })
-export class StudyDetailsComponent implements OnInit {
+
+export class ExistingStudyComponent implements OnInit {
   selectedOption: string = 'new'; // Default selection for form mode
   searchQuery: string = ''; // Query for search functionality
   studies: any[] = []; // Data for existing studies (to populate TreeTable)
@@ -41,7 +37,8 @@ export class StudyDetailsComponent implements OnInit {
     // Subscribe to the getStudies() Observable and update the studies array
     this.studyService.getStudies().subscribe(
       (studies) => {
-        this.studies = studies; // This will update your studies array with the fetched data
+        this.studies = studies;
+        this.filteredStudies =  studies;// This will update your studies array with the fetched data
       },
       (error) => {
         console.error('Error fetching studies:', error); // Handle error if necessary
@@ -95,7 +92,7 @@ export class StudyDetailsComponent implements OnInit {
     if (this.studyForm.valid) {
       const formData = this.studyForm.value;
       const updatedStudyData = {
-        studyId: formData.studyId,
+        studyId: this.selectedStudy.studyId,
         fields: this.selectedStudy.fields.map((field: any) => ({
           name: field.name,
           status: formData[field.key],
@@ -111,3 +108,4 @@ export class StudyDetailsComponent implements OnInit {
   }
   
 }
+

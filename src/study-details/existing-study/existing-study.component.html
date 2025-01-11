@@ -1,0 +1,92 @@
+<div class="mb-4">
+    <div class="input-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="searchQuery"
+        placeholder="Search by Study ID"
+        (ngModelChange)="filterStudies()"
+      />
+    </div>
+  </div>
+
+  <!-- Table to display Study IDs and their status -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5>Existing Studies</h5>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Study ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let study of filteredStudies"
+            (click)="onSelectStudy(study)"
+            class="cursor-pointer"
+          >
+            <td>{{ study.studyId }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Editable Study Form (only visible when a study is selected) -->
+  <div *ngIf="studyForm" class="mt-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white">
+        <h5>Study Form for {{ selectedStudy?.studyId }}</h5>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="studyForm" (ngSubmit)="onSubmit()">
+          <div class="form-group row">
+            <label for="studyId" class="col-form-label col-sm-2 fw-bold">Study ID:</label>
+            <div class="col-sm-10">
+              <input
+                id="studyId"
+                formControlName="studyId"
+                class="form-control"
+                [disabled]="true"
+              />
+            </div>
+          </div>
+
+          <!-- Loop through study fields dynamically -->
+          <div *ngFor="let field of selectedStudy.fields" class="form-group">
+            <label class="col-form-label fw-bold">{{ field.name }}:</label>
+            <div class="row">
+              <div class="col-sm-6">
+                <select [formControlName]="field.key" class="form-control">
+                  <option *ngFor="let option of statusOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-sm-6">
+                <input
+                  type="text"
+                  placeholder="Add comment"
+                  formControlName="{{ field.key + '_comment' }}"
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+<!-- {{studyForm | JSON}} -->
+          <button
+            type="submit"
+            [disabled]="studyForm.invalid"
+            class="btn btn-primary mt-3 float-end"
+          >
+            Update
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>

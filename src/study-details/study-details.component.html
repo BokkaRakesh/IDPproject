@@ -29,45 +29,7 @@
 
 <!-- Existing Study Search and Table (only visible when 'existing' is selected) -->
 <div *ngIf="selectedOption === 'existing'" class="container mt-4">
-  <!-- Search bar for existing studies -->
-  <div class="mb-4 d-flex align-items-center">
-    <input 
-      type="text" 
-      class="form-control me-2" 
-      placeholder="Search by Study ID or Name" 
-      [(ngModel)]="searchQuery" 
-      (ngModelChange)="onSearchQueryChange($event)" />
-  </div>
-  
-  <!-- Data Table for displaying existing studies -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped">
-      <thead class="table-dark">
-        <tr>
-          <th>Study ID</th>
-          <th>Study Name</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngFor="let study of studies">
-          <!-- Parent Study Row -->
-          <tr>
-            <td>{{ study.data.studyId }}</td>
-            <td>{{ study.data.studyName }}</td>
-            <td>{{ study.data.status }}</td>
-          </tr>
-
-          <!-- Child Study Rows -->
-          <ng-container *ngFor="let child of study.children">
-            <tr>
-              <td>{{ child.data.studyId }}</td>
-              <td>{{ child.data.studyName }}</td>
-              <td>{{ child.data.status }}</td>
-            </tr>
-          </ng-container>
-        </ng-container>
-      </tbody>
-    </table>
-  </div>
+  <!-- Search Box for filtering studies -->
+<app-existing-study></app-existing-study>
 </div>
+

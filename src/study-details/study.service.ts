@@ -1,21 +1,97 @@
 import { Injectable } from '@angular/core';
 import { Workbook } from 'exceljs';
-import { Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StudyService {
+  private studiesSubject = new BehaviorSubject<any[]>([
+    {
+      studyId: 'ST123',
+      fields: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      studyId: 'ST124',
+      fields: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      studyId: 'ST125',
+      fields: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ])
+  private studyTemplate = {
+    fields: [
+      { name: 'Request for new data Ingestion', status: 'notStarted', comment: '' },
+      { name: 'Jira creation in ICDP Dashboard', status: 'notStarted', comment: '' },
+      { name: 'Apollo Meta request creation and approval', status: 'notStarted', comment: '' },
+      { name: 'IDTA creation and approval', status: 'notStarted', comment: '' },
+      { name: 'S3 bucket creation and testing with the vendor', status: 'notStarted', comment: '' },
+      { name: 'Sample data transfer with transfer log', status: 'notStarted', comment: '' },
+      { name: 'Sample data verification on S3', status: 'notStarted', comment: '' },
+      { name: 'Sample data validation on Flywheel', status: 'notStarted', comment: '' },
+      { name: 'Sample data ingestion confirmation to the vendor', status: 'notStarted', comment: '' },
+      { name: 'Gears+Curation+Tags Verification', status: 'notStarted', comment: '' },
+      { name: 'Full dataset transfer by the vendor', status: 'notStarted', comment: '' },
+      { name: 'Full dataset verification on S3', status: 'notStarted', comment: '' },
+      { name: 'Full dataset ingestion on Flywheel', status: 'notStarted', comment: '' },
+      { name: 'Full dataset validation confirmation to the vendor', status: 'notStarted', comment: '' },
+      { name: 'Onboarding documentation', status: 'notStarted', comment: '' },
+      { name: 'Data Ingestion Checklist', status: 'notStarted', comment: '' },
+      { name: 'Close the loop with the vendor', status: 'notStarted', comment: '' },
+      { name: 'Dataset availability confirmation to the study teams', status: 'notStarted', comment: '' },
+      { name: 'Data access requests by the users', status: 'notStarted', comment: '' },
+      { name: 'Data access jira creation in ICDP', status: 'notStarted', comment: '' },
+      { name: 'Data access completion by the data managers', status: 'notStarted', comment: '' },
+    ],
+  };
 
+  private selectedStudySubject = new BehaviorSubject<any>(null);
+  private studyDataSubject = new BehaviorSubject<any>(null); // Initial value is null
+  studyData$ = this.studyDataSubject.asObservable(); // Expose the observable to be subscribed to
   constructor() {}
 
-  // Method to save study data (simulating an API call with a delay)
-  saveStudyData(studyData: any): Observable<void> {
-    console.log('Study data saved:', studyData);
-    // Simulate a delay to mimic an API response
-    return of(undefined).pipe(delay(500)); // 500ms delay to mimic async behavior
+  // Get the list of studies as an observable
+  getStudies(): Observable<any[]> {
+    return this.studiesSubject.asObservable().pipe(delay(500)); // Simulate async behavior
   }
+
+  // Save study data and update the studies list
+  saveStudyData(studyData: any): Observable<void> {
+    return new Observable<void>((observer) => {
+      setTimeout(() => {
+        const studies = this.studiesSubject.value;
+
+        // Add new study data to the list with template fields if not already present
+        const newStudy = {
+          studyId: studyData.studyId,
+          fields: this.studyTemplate.fields,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          ...studyData, // Merge additional studyData properties
+        };
+
+        const updatedStudies = [...studies, newStudy];
+        this.studiesSubject.next(updatedStudies); // Update the BehaviorSubject
+        observer.next();
+        observer.complete();
+      }, 500); // Simulated delay
+    });
+  }
+  getSelectedStudy(): any {
+    return this.selectedStudySubject.value; // Return the current study data
+  }
+  setSelectedStudy(study: any): void {
+    this.selectedStudySubject.next(study); // Update the selected study
+  }
+
 
   // Method to create and return an Excel workbook (using exceljs)
   async createExcelWorkbook(studyData: any): Promise<Blob> {
