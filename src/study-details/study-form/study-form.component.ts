@@ -1,15 +1,30 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { DropdownModule } from 'primeng/dropdown';
+import { TreeTableModule } from 'primeng/treetable';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { StudyService } from '../study.service';
+import saveAs from 'file-saver';
 
 @Component({
   selector: 'app-study-form',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, TreeTableModule, FormsModule, ReactiveFormsModule, DropdownModule],
   templateUrl: './study-form.component.html',
-  styleUrl: './study-form.component.scss'
+  styleUrls: ['./study-form.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class StudyFormComponent implements OnInit {
-  studyForm: FormGroup | undefined;
+  studyForm!: FormGroup;
+
+  statusOptions = [
+    { label: 'Not yet started', value: 'notStarted' },
+    { label: 'In progress', value: 'inProgress' },
+    { label: 'Complete', value: 'complete' }
+  ];
+
   fields = [
     { key: 'requestNewData', name: 'Request for new data Ingestion' },
     { key: 'jiraCreation', name: 'Jira creation in ICDP Dashboard' },
@@ -30,35 +45,57 @@ export class StudyFormComponent implements OnInit {
     { key: 'closeLoopVendor', name: 'Close the loop with the vendor' },
     { key: 'datasetAvailability', name: 'Dataset availability confirmation to the study teams' },
     { key: 'dataAccessRequests', name: 'Data access requests by the users' },
-    { key: 'dataAccessJiraCreation', name: 'Data access Jira creation in ICDP' },
+    { key: 'dataAccessJiraCreation', name: 'Data access jira creation in ICDP' },
     { key: 'dataAccessCompletion', name: 'Data access completion by the data managers' }
   ];
-  
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private studyService: StudyService) {}
 
   ngOnInit() {
     this.studyForm = this.fb.group({
       studyId: ['', Validators.required],
-      studyName: ['', Validators.required],
-      ...this.fields.reduce((acc: { [key: string]: any }, field) => {
-        acc[field.key] = ['Not yet started'];
+      ...this.fields.reduce((acc: Record<string, any>, field) => {
+        acc[field.key] = ['notStarted', Validators.required];
         acc[field.key + '_comment'] = [''];
         return acc;
-      }, {}),
+      }, {})
     });
-    
   }
 
   onSubmit() {
-    if (this.studyForm) {
+    if (this.studyForm.valid) {
       const formData = this.studyForm.value;
-      // Save to JSON file or mock API endpoint
-      console.log(formData);
-    } else {
-      console.error('Form is not initialized.');
+      const newStudyData = {
+        studyId: formData.studyId,
+        fields: this.fields.map(field => ({
+          name: field.name,
+          status: formData[field.key],
+          comment: formData[field.key + '_comment']
+        })),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Save to backend or API
+      this.studyService.saveStudyData(newStudyData).subscribe({
+        next: () => {
+          alert('Study data saved successfully');
+          this.saveToExcel(newStudyData); // Proceed to Excel creation
+        },
+        error: (error) => {
+          alert('Error saving study data');
+          console.error('Error saving study data:', error);
+        }
+      });
     }
   }
-  
-}
 
+  async saveToExcel(studyData: any) {
+    try {
+      const workbookBlob = await this.studyService.createExcelWorkbook(studyData);
+      saveAs(workbookBlob, `Study_${studyData.studyId}_${new Date().toISOString()}.xlsx`);
+    } catch (error) {
+      console.error('Error generating Excel file:', error);
+    }
+  }
+}

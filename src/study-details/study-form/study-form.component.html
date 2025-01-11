@@ -1,30 +1,39 @@
-<form [formGroup]="studyForm" (ngSubmit)="onSubmit()">
-    <div>
-      <label for="studyId">Study ID</label>
-      <input id="studyId" formControlName="studyId" />
-      <div *ngIf="studyForm.controls['studyId'].invalid && studyForm.controls['studyId'].touched">
-        Study ID is required.
+<div class="card">
+  <div class="card-header">
+    <h5>Study Form</h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="studyForm" (ngSubmit)="onSubmit()">
+      <div class="form-group row">
+        <label for="studyId" class="col-form-label col-sm-2 fw-bold">Study ID:</label>
+        <div class="col-sm-10">
+          <input id="studyId" formControlName="studyId" class="form-control" />
+          <div *ngIf="studyForm.controls['studyId'].invalid && studyForm.controls['studyId'].touched" class="text-danger">
+            Study ID is required.
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <div>
-      <label for="studyName">Study Name</label>
-      <input id="studyName" formControlName="studyName" />
-      <div *ngIf="studyForm.controls['studyName'].invalid && studyForm.controls['studyName'].touched">
-        Study Name is required.
+
+      <div *ngFor="let field of fields" class="form-group">
+        <label class="col-form-label fw-bold">{{ field.name }}:</label>
+
+        <div class="row">
+          <div class="col-sm-6">
+            <select [formControlName]="field.key" class="form-control">
+              <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+
+          <div class="col-sm-6">
+            <input type="text" placeholder="Add comment" formControlName="{{ field.key + '_comment' }}" class="form-control" />
+          </div>
+        </div>
       </div>
-    </div>
-    
-    <div *ngFor="let field of fields">
-      <label>{{ field.name }}</label>
-      <select formControlName="{{ field.key }}">
-        <option value="Not yet started">Not yet started</option>
-        <option value="In progress">In progress</option>
-        <option value="Complete">Complete</option>
-      </select>
-      <input type="text" placeholder="Add comment" formControlName="{{ field.key + '_comment' }}" />
-    </div>
-  
-    <button type="submit" [disabled]="studyForm.invalid">Submit</button>
-  </form>
-  
+
+      <!-- Submit button -->
+      <button type="submit" [disabled]="studyForm.invalid" class="btn btn-primary mt-3 float-end">Submit</button>
+    </form>
+  </div>
+</div>
+
+

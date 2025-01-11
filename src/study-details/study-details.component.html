@@ -1,23 +1,73 @@
-<h1>GIP dataset tracker page</h1>
-<div>
-  <label>
-    <input type="radio" name="studyType" [(ngModel)]="selectedOption" value="new" />
-    New Study
-  </label>
-  <label>
-    <input type="radio" name="studyType" [(ngModel)]="selectedOption" value="existing" />
-    Existing Study
-  </label>
+<div class="container mt-5">
+  <!-- Card for the header -->
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white text-center">
+      <h1 class="mb-0">GIP Dataset Tracker Page</h1>
+    </div>
+    <div class="card-body">
+      <!-- Radio buttons for selecting Study Type -->
+      <div class="d-flex justify-content-center mb-4">
+        <div class="form-check form-check-inline">
+          <input type="radio" class="form-check-input" name="studyType" [(ngModel)]="selectedOption" value="new" id="newStudy" />
+          <label class="form-check-label" for="newStudy">New Study</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input type="radio" class="form-check-input" name="studyType" [(ngModel)]="selectedOption" value="existing" id="existingStudy" />
+          <label class="form-check-label" for="existingStudy">Existing Study</label>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- New Study Form (only visible when 'new' is selected) -->
 <div *ngIf="selectedOption === 'new'">
-  <app-study-form [mode]="'new'"></app-study-form>
+  <div class="container mt-4">
+    <app-study-form [mode]="'new'"></app-study-form>
+  </div>
 </div>
 
-<div *ngIf="selectedOption === 'existing'">
-  <input type="text" placeholder="Search by Study ID or Name" [(ngModel)]="searchQuery" />
-  <button (click)="searchStudies()">Search</button>
-  <p-treetable [value]="studies" [expandedRowKeys]="expandedRowKeys">
-    <!-- Tree table definition -->
-  </p-treetable>
+<!-- Existing Study Search and Table (only visible when 'existing' is selected) -->
+<div *ngIf="selectedOption === 'existing'" class="container mt-4">
+  <!-- Search bar for existing studies -->
+  <div class="mb-4 d-flex align-items-center">
+    <input 
+      type="text" 
+      class="form-control me-2" 
+      placeholder="Search by Study ID or Name" 
+      [(ngModel)]="searchQuery" 
+      (ngModelChange)="onSearchQueryChange($event)" />
+  </div>
+  
+  <!-- Data Table for displaying existing studies -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>Study ID</th>
+          <th>Study Name</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let study of studies">
+          <!-- Parent Study Row -->
+          <tr>
+            <td>{{ study.data.studyId }}</td>
+            <td>{{ study.data.studyName }}</td>
+            <td>{{ study.data.status }}</td>
+          </tr>
+
+          <!-- Child Study Rows -->
+          <ng-container *ngFor="let child of study.children">
+            <tr>
+              <td>{{ child.data.studyId }}</td>
+              <td>{{ child.data.studyName }}</td>
+              <td>{{ child.data.status }}</td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
 </div>
