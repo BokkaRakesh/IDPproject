@@ -1,0 +1,23 @@
+<h1>GIP dataset tracker page</h1>
+<div>
+  <label>
+    <input type="radio" name="studyType" [(ngModel)]="selectedOption" value="new" />
+    New Study
+  </label>
+  <label>
+    <input type="radio" name="studyType" [(ngModel)]="selectedOption" value="existing" />
+    Existing Study
+  </label>
+</div>
+
+<div *ngIf="selectedOption === 'new'">
+  <app-study-form [mode]="'new'"></app-study-form>
+</div>
+
+<div *ngIf="selectedOption === 'existing'">
+  <input type="text" placeholder="Search by Study ID or Name" [(ngModel)]="searchQuery" />
+  <button (click)="searchStudies()">Search</button>
+  <p-treetable [value]="studies" [expandedRowKeys]="expandedRowKeys">
+    <!-- Tree table definition -->
+  </p-treetable>
+</div>

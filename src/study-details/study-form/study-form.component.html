@@ -1,0 +1,30 @@
+<form [formGroup]="studyForm" (ngSubmit)="onSubmit()">
+    <div>
+      <label for="studyId">Study ID</label>
+      <input id="studyId" formControlName="studyId" />
+      <div *ngIf="studyForm.controls['studyId'].invalid && studyForm.controls['studyId'].touched">
+        Study ID is required.
+      </div>
+    </div>
+    
+    <div>
+      <label for="studyName">Study Name</label>
+      <input id="studyName" formControlName="studyName" />
+      <div *ngIf="studyForm.controls['studyName'].invalid && studyForm.controls['studyName'].touched">
+        Study Name is required.
+      </div>
+    </div>
+    
+    <div *ngFor="let field of fields">
+      <label>{{ field.name }}</label>
+      <select formControlName="{{ field.key }}">
+        <option value="Not yet started">Not yet started</option>
+        <option value="In progress">In progress</option>
+        <option value="Complete">Complete</option>
+      </select>
+      <input type="text" placeholder="Add comment" formControlName="{{ field.key + '_comment' }}" />
+    </div>
+  
+    <button type="submit" [disabled]="studyForm.invalid">Submit</button>
+  </form>
+  
