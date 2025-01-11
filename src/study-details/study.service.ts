@@ -8,24 +8,24 @@ import { delay } from 'rxjs/operators';
 })
 export class StudyService {
   private studiesSubject = new BehaviorSubject<any[]>([
-    {
-      studyId: 'ST123',
-      fields: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      studyId: 'ST124',
-      fields: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      studyId: 'ST125',
-      fields: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
+    // {
+    //   studyId: 'ST123',
+    //   fields: [],
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   studyId: 'ST124',
+    //   fields: [],
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   studyId: 'ST125',
+    //   fields: [],
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
   ])
   private studyTemplate = {
     fields: [
