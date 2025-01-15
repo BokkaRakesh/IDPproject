@@ -96,7 +96,7 @@ export class StudyFormComponent implements OnInit {
       this.studyService.saveStudyData(newStudyData).subscribe(
         () => {
           alert('Study data saved successfully');
-          this.studyService.saveToExcel(newStudyData);
+          // this.studyService.saveToExcel(newStudyData);
           this.studyForm.reset();
           this.initlizeForm();
         },

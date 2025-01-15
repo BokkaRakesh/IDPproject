@@ -1,0 +1,8 @@
+.bi-download.disabled {
+    pointer-events: none;  /* Disable click interaction */
+    opacity: 0.5;  /* Make the icon appear faded */
+  }
+  .disabled-row {
+    opacity: 0.5;  /* Make the entire row appear faded */
+    pointer-events: none;  /* Disable all interactions with the row */
+  }

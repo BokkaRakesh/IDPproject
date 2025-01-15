@@ -1,18 +1,17 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import saveAs from 'file-saver';
 import { StudyService } from '../services/study.service';
+import { ExcelServiceImpl } from '../services/excel-service-impl.service';
 
 @Component({
   selector: 'app-existing-study',
-  standalone:true,
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './existing-study.component.html',
-  styleUrl: './existing-study.component.scss'
+  styleUrls: ['./existing-study.component.scss']
 })
-
 export class ExistingStudyComponent implements OnInit {
   @Input() mode: 'new' | 'existing' = 'existing';
   searchQuery: string = ''; // Query for search functionality
@@ -26,17 +25,20 @@ export class ExistingStudyComponent implements OnInit {
     { label: 'Complete', value: 'complete' },
   ];
 
-  constructor(private studyService: StudyService, private fb:FormBuilder) {}
+  constructor(
+    private studyService: StudyService, 
+    private excelService: ExcelServiceImpl,
+    private fb: FormBuilder
+  ) {}
 
   ngOnInit(): void {
-    // Subscribe to the getStudies() Observable and update the studies array
     this.studyService.getStudies().subscribe(
       (studies) => {
         this.studies = studies;
-        this.filteredStudies =  studies;// This will update your studies array with the fetched data
+        this.filteredStudies = studies;
       },
       (error) => {
-        console.error('Error fetching studies:', error); // Handle error if necessary
+        console.error('Error fetching studies:', error);
       }
     );
   }
@@ -51,8 +53,10 @@ export class ExistingStudyComponent implements OnInit {
       this.filteredStudies = this.studies;
     }
   }
-
-  // When a study row is clicked, set the selected study
+  onStudySelected(study: any) {
+    study.selected = !study.selected;
+  }
+  // Method to handle individual study selection
   onSelectStudy(study: any) {
     this.selectedStudy = study;
     this.selectedStudy.fields = this.selectedStudy.fields.map((field: any, index: number) => ({
@@ -61,8 +65,6 @@ export class ExistingStudyComponent implements OnInit {
     }));
     this.initializeForm(); // Initialize the form for the selected study
   }
-
-  // Initialize the form for the selected study
   private initializeForm() {
     // Add keys to fields dynamically before initializing the form
 
@@ -81,8 +83,10 @@ export class ExistingStudyComponent implements OnInit {
     // Initialize the form group
     this.studyForm = this.fb.group(fieldsGroup);
   }
-
-  // Handle form submission
+  // Check if any study is selected for bulk download
+  anySelected(): boolean {
+    return this.filteredStudies.some(study => study.selected);
+  }
   onSubmit() {
     if (this.studyForm.valid) {
       const formData = this.studyForm.value;
@@ -95,18 +99,18 @@ export class ExistingStudyComponent implements OnInit {
         })),
         createdAt: this.selectedStudy.createdAt,
         updatedAt: new Date(),
-        mode:this.mode
       };
   
-      // Save updated data
       this.studyService.saveStudyData(updatedStudyData).subscribe({
         next: () => {
           alert('Study data updated successfully');
-          this.saveToExcel(updatedStudyData); // Proceed to Excel creation
+          
+          // Refresh the table data after updating the record
+          this.refreshStudies();
   
-          // Reset the form and hide it
-          this.studyForm.reset(); // Reset the form
-          this.selectedStudy = null; // Hide the form
+          // Reset the form and selected study
+          this.studyForm.reset();
+          this.selectedStudy = null;
         },
         error: (error) => {
           alert('Error updating study data');
@@ -115,14 +119,81 @@ export class ExistingStudyComponent implements OnInit {
       });
     }
   }
-  
-    async saveToExcel(studyData: any) {
-      try {
-        const workbookBlob = await this.studyService.createExcelWorkbook(studyData);
-        saveAs(workbookBlob, `Study_${studyData.studyId}_${new Date().toISOString()}.xlsx`);
-      } catch (error) {
-        console.error('Error generating Excel file:', error);
-      }
+  // Method to refresh studies from IndexedDB
+refreshStudies() {
+  this.studyService.getStudies().subscribe({
+    next: (studies) => {
+      // Update the studies and filtered studies arrays
+      this.studies = studies;
+      this.filteredStudies = studies;  // If you have any filters applied, update them here
+    },
+    error: (err) => {
+      console.error('Error refreshing studies:', err);
     }
+  });
 }
 
+  
+  // Method to handle bulk download
+  onBulkDownload() {
+    const selectedStudies = this.filteredStudies.filter(study => study.selected);
+    
+    if (selectedStudies.length === 0) {
+      alert('No studies selected for download.');
+      return;
+    }
+
+    // Generate the Excel file for all selected studies
+    this.excelService.createExcelWorkbook(selectedStudies).then((blob:any) => {
+      saveAs(blob, 'studies_bulk_download.xlsx');
+    }).catch(err => {
+      console.error('Error generating bulk Excel file:', err);
+    });
+  }
+
+  // Method to handle download for a single study
+  onDownload(study: any) {
+    if (!study.selected) {
+      return;  // Prevent download if checkbox is not selected
+    }
+    this.excelService.createExcelWorkbook([study]).then((blob) => {
+      saveAs(blob, `study_${study.studyId}_download.xlsx`);
+    }).catch(err => {
+      console.error('Error generating Excel file for study:', err);
+    });
+  }
+
+  // Method to toggle select all checkbox
+  toggleSelectAll(event: any) {
+    const isChecked = event.target.checked;
+    this.filteredStudies.forEach((study) => (study.selected = isChecked));
+  }
+
+  // Check if all studies are selected
+  isAllSelected(): boolean {
+    return this.filteredStudies.length > 0 && this.filteredStudies.every(study => study.selected);
+  }
+
+  // Method to edit a study (you can extend this with a modal or form)
+  onEditStudy(study: any) {
+    this.selectedStudy = study;
+    // Add the logic to open a form/modal for editing the study details.
+    console.log('Editing study:', study);
+  }
+
+  // Method to delete a study (you can extend this with a confirmation modal)
+  onDeleteStudy(study: any) {
+    if (confirm('Are you sure you want to delete this study?')) {
+      this.studyService.deleteStudy(study.studyId).subscribe(
+        () => {
+          this.studies = this.studies.filter(s => s.studyId !== study.studyId);
+          this.filteredStudies = this.filteredStudies.filter(s => s.studyId !== study.studyId);
+          alert('Study deleted successfully');
+        },
+        (error) => {
+          console.error('Error deleting study:', error);
+        }
+      );
+    }
+  }
+}
