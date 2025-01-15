@@ -29,7 +29,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
+           "styles": [
+  "src/styles.scss"
+
+],
+
             "scripts": []
           },
           "configurations": {
@@ -83,15 +87,7 @@
                 "input": "public"
               }
             ],
-"styles": [
-  "src/styles.scss", 
-  "node_modules/primeng/resources/themes/lara-light-indigo/theme.css",
-  "node_modules/primeng/resources/primeng.min.css",
-  "node_modules/primeicons/primeicons.css"
-],
-
-
-
+            "styles": [],
             "scripts": []
           }
         }
