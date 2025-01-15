@@ -1,12 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DropdownModule } from 'primeng/dropdown';
-import { TreeTableModule } from 'primeng/treetable';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { StudyService } from '../study.service';
-import saveAs from 'file-saver';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, OnInit } from "@angular/core";
+import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule, AbstractControl, AsyncValidatorFn } from "@angular/forms";
+import { StudyService } from "../services/study.service";
+import { CommonModule } from "@angular/common";
+import { DropdownModule } from "primeng/dropdown";
+import { TreeTableModule } from "primeng/treetable";
+import { Observable, of } from "rxjs";
+import { map, debounceTime, switchMap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-study-form',
@@ -53,55 +52,56 @@ export class StudyFormComponent implements OnInit {
   constructor(private fb: FormBuilder, private studyService: StudyService) {}
 
   ngOnInit() {
-   this.initlizeForm();
+    this.initlizeForm();
   }
-initlizeForm(){
-  this.studyForm = this.fb.group({
-    studyId: ['', Validators.required],
-    ...this.fields.reduce((acc: Record<string, any>, field) => {
-      acc[field.key] = ['notStarted', Validators.required];
-      acc[field.key + '_comment'] = [''];
-      return acc;
-    }, {})
-  });
-}
+
+  initlizeForm() {
+    this.studyForm = this.fb.group({
+      studyId: ['', [Validators.required], [this.studyIdAsyncValidator()]],
+      ...this.fields.reduce((acc: Record<string, any>, field) => {
+        acc[field.key] = ['notStarted', Validators.required];
+        acc[field.key + '_comment'] = [''];
+        return acc;
+      }, {}),
+    });
+  }
+
+  // Async Validator to check if studyId exists
+  studyIdAsyncValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<any> => {
+      if (!control.value) {
+        return of(null); // If no value is provided, return null (no validation)
+      }
+  
+      return this.studyService.checkStudyIdExists(control.value).pipe(
+        map((exists: boolean) => exists ? { studyIdExists: true } : null), // If exists, return error object with key 'studyIdExists'
+        catchError(() => of(null)) // Handle error, do not block submission
+      );
+    };
+  }
   onSubmit() {
     if (this.studyForm.valid) {
       const formData = this.studyForm.value;
       const newStudyData = {
         studyId: formData.studyId,
-        fields: this.fields.map(field => ({
+        fields: this.fields.map((field) => ({
           name: field.name,
           status: formData[field.key],
-          comment: formData[field.key + '_comment']
+          comment: formData[field.key + '_comment'],
         })),
         createdAt: new Date(),
         updatedAt: new Date(),
-        mode:this.mode
       };
 
-      // Save to backend or API
-      this.studyService.saveStudyData(newStudyData).subscribe({
-        next: () => {
+      this.studyService.saveStudyData(newStudyData).subscribe(
+        () => {
           alert('Study data saved successfully');
-          this.saveToExcel(newStudyData); // Proceed to Excel creation
+          this.studyService.saveToExcel(newStudyData);
           this.studyForm.reset();
           this.initlizeForm();
         },
-        error: (error) => {
-          alert('Error saving study data');
-          console.error('Error saving study data:', error);
-        }
-      });
-    }
-  }
-
-  async saveToExcel(studyData: any) {
-    try {
-      const workbookBlob = await this.studyService.createExcelWorkbook(studyData);
-      saveAs(workbookBlob, `Study_${studyData.studyId}_${new Date().toISOString()}.xlsx`);
-    } catch (error) {
-      console.error('Error generating Excel file:', error);
+        (error) => console.error('Error saving study data:', error)
+      );
     }
   }
 }

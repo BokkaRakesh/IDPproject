@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { StudyService } from '../study.service';
 import { CommonModule } from '@angular/common';
 import saveAs from 'file-saver';
+import { StudyService } from '../services/study.service';
 
 @Component({
   selector: 'app-existing-study',
