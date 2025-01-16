@@ -1,19 +1,100 @@
 .card {
-  margin: 0 auto;  
+  margin: 0 auto;
   margin-top: 50px;
   margin-bottom: 10px;
 }
 
-  
-  .card-header {
-    background-color: #f8f9fa;
-  }
-  
-  .card-body {
-    padding: 20px; 
-  }
-  
-  .card-footer {
-    background-color: #f1f1f1;
-  }
-  
+.card-header {
+  background-color: #f8f9fa;
+}
+
+.card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Study ID in the same card as dynamic fields */
+.form-group.bordered-block {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Styling for the dynamic fields section */
+.form-container {
+  border-top: solid;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px; /* Limits the scrollable area to dynamic fields */
+  overflow-y: auto;  /* Enables scrolling only for dynamic fields */
+  padding-right: 10px; /* Ensures scrollbar does not overlap */
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dropdown-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Ensure input, textarea, and select elements have the same width */
+.input-block, .text-area-block {
+  width: 100%; /* Full width of the container */
+}
+
+.text-area-block {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Styling for dynamic status icon */
+.status-icon {
+  font-size: 20px;
+  margin-left: 10px;
+}
+
+.bi-exclamation-circle.text-warning {
+  color: #ffc107;
+}
+
+.bi-arrow-repeat.text-primary {
+  color: #0d6efd;
+}
+
+.bi-check-circle.text-success {
+  color: #28a745;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+/* Ensure textarea has the same width */
+.text-area-block {
+  height: 100px;
+}
+
+/* Optional: Styling for Study ID input */
+.form-group.bordered-block {
+  margin-bottom: 16px; /* Adds space between Study ID and dynamic fields */
+}

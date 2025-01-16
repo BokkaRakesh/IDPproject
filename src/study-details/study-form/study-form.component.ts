@@ -17,6 +17,7 @@ import { map, debounceTime, switchMap, catchError } from 'rxjs/operators';
 })
 export class StudyFormComponent implements OnInit {
   studyForm!: FormGroup;
+  statusIcons: { [key: string]: string } = {}; // Stores icon for each field status
   @Input() mode: 'new' | 'existing' = 'new';
 
   statusOptions = [
@@ -53,13 +54,14 @@ export class StudyFormComponent implements OnInit {
 
   ngOnInit() {
     this.initlizeForm();
+    this.setInitialIcons(); // Set default status icons when the form loads
   }
 
   initlizeForm() {
     this.studyForm = this.fb.group({
       studyId: ['', [Validators.required], [this.studyIdAsyncValidator()]],
       ...this.fields.reduce((acc: Record<string, any>, field) => {
-        acc[field.key] = ['notStarted', Validators.required];
+        acc[field.key] = ['notStarted', Validators.required]; // Default 'notStarted' status
         acc[field.key + '_comment'] = [''];
         return acc;
       }, {}),
@@ -72,13 +74,45 @@ export class StudyFormComponent implements OnInit {
       if (!control.value) {
         return of(null); // If no value is provided, return null (no validation)
       }
-  
       return this.studyService.checkStudyIdExists(control.value).pipe(
         map((exists: boolean) => exists ? { studyIdExists: true } : null), // If exists, return error object with key 'studyIdExists'
         catchError(() => of(null)) // Handle error, do not block submission
       );
     };
   }
+
+  // Initialize status icons for each field
+  setInitialIcons() {
+    this.fields.forEach(field => {
+      const status = this.studyForm.get(field.key)?.value || 'notStarted'; // Default to 'notStarted' if not set
+      this.setStatusIcon(field.key, status);
+    });
+  }
+
+  // Method to set the icon based on the status
+  setStatusIcon(fieldKey: string, status: string) {
+    switch (status) {
+      case 'notStarted':
+        this.statusIcons[fieldKey] = 'bi bi-exclamation-circle text-warning'; // Exclamation icon
+        break;
+      case 'inProgress':
+        this.statusIcons[fieldKey] = 'bi bi-arrow-repeat text-primary'; // Loading icon
+        break;
+      case 'complete':
+        this.statusIcons[fieldKey] = 'bi bi-check-circle text-success'; // Checkmark icon
+        break;
+      default:
+        this.statusIcons[fieldKey] = ''; // Default empty icon
+    }
+  }
+
+  // Handle status change and update icon accordingly
+  onStatusChange(fieldKey: string, event: Event): void {
+    const selectElement = event.target as HTMLSelectElement; // Explicit cast to HTMLSelectElement
+    const status = selectElement.value;
+    this.setStatusIcon(fieldKey, status); // Update icon based on status
+  }
+
   onSubmit() {
     if (this.studyForm.valid) {
       const formData = this.studyForm.value;
@@ -96,7 +130,6 @@ export class StudyFormComponent implements OnInit {
       this.studyService.saveStudyData(newStudyData).subscribe(
         () => {
           alert('Study data saved successfully');
-          // this.studyService.saveToExcel(newStudyData);
           this.studyForm.reset();
           this.initlizeForm();
         },

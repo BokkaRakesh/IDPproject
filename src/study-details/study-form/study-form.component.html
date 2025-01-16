@@ -4,35 +4,55 @@
   </div>
   <div class="card-body">
     <form [formGroup]="studyForm" (ngSubmit)="onSubmit()">
-      <!-- Study ID Field -->
-      <div class="form-group row">
-        <label for="studyId" class="col-form-label col-sm-2 fw-bold">Study ID:</label>
-        <div class="col-sm-10">
-          <input id="studyId" formControlName="studyId" class="form-control" />
-          <div *ngIf="studyForm.controls['studyId'].invalid && studyForm.controls['studyId'].touched" class="text-danger">
-            <div *ngIf="studyForm.controls['studyId'].hasError('required')">Study ID is required.</div>
-            <div *ngIf="studyForm.controls['studyId'].hasError('studyIdExists')">Study ID already exists.</div>
-          </div>
-        </div>
+    <!-- Study ID in a bordered block -->
+    <div class="form-group bordered-block">
+      <label for="studyId" class="col-form-label fw-bold">Study ID:</label>
+      <input id="studyId" formControlName="studyId" class="form-control input-block" />
+      <div *ngIf="studyForm.controls['studyId'].invalid && studyForm.controls['studyId'].touched" class="text-danger">
+        <div *ngIf="studyForm.controls['studyId'].hasError('required')">Study ID is required.</div>
+        <div *ngIf="studyForm.controls['studyId'].hasError('studyIdExists')">Study ID already exists.</div>
       </div>
+    </div>
 
-      <!-- Dynamic Fields -->
-      <div *ngFor="let field of fields" class="form-group">
+    <!-- Space between Study ID and dynamic fields -->
+    <br>
+
+    <!-- Dynamic Fields -->
+    <div class="form-container">
+      <!-- Loop Through Fields -->
+      <div *ngFor="let field of fields" class="form-group bordered-block">
+        <!-- Field Name -->
         <label class="col-form-label fw-bold">{{ field.name }}:</label>
-        <div class="row">
-          <div class="col-sm-6">
-            <select [formControlName]="field.key" class="form-control">
-              <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+        <div class="field-container">
+          <!-- Status Dropdown -->
+          <div class="dropdown-container">
+            <select
+              [formControlName]="field.key"
+              class="form-control input-block"
+              (change)="onStatusChange(field.key, $event)"
+            >
+              <option *ngFor="let option of statusOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
             </select>
+            <!-- Dynamic Icon -->
+            <i class="status-icon" [class]="statusIcons[field.key]"></i>
           </div>
-          <div class="col-sm-6">
-            <textarea type="text" placeholder="Add comment" formControlName="{{ field.key + '_comment' }}" class="form-control"></textarea>
-          </div>
+
+          <!-- Comment Text Area -->
+          <textarea
+            placeholder="Add comment"
+            [formControlName]="field.key + '_comment'"
+            class="form-control text-area-block"
+          ></textarea>
         </div>
       </div>
 
-      <!-- Submit button -->
-      <button type="submit" [disabled]="studyForm.invalid" class="btn btn-primary mt-3 float-end">Submit</button>
-    </form>
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button type="submit" [disabled]="studyForm.invalid" class="btn btn-primary mt-3 float-end">Submit</button>
+      </div>
+    </div>
+  </form>
   </div>
 </div>
