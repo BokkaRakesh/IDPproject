@@ -16,7 +16,7 @@ export class ExcelServiceImpl implements ExcelService {
     const worksheet = workbook.addWorksheet('Study Data');
     worksheet.getRow(1).values = ['Study Names', 'Status', 'Comments'];
 
-    studyData.fields.forEach((field: any, index: number) => {
+    studyData[0].fields.forEach((field: any, index: number) => {
       const rowIndex = index + 2;
       const row = worksheet.getRow(rowIndex);
       row.getCell(1).value = field.name;
