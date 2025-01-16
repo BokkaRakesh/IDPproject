@@ -53,11 +53,13 @@ export class ExistingStudyComponent implements OnInit {
       this.filteredStudies = this.studies;
     }
   }
-  onStudySelected(study: any) {
-    study.selected = !study.selected;
+  onStudySelected(study: any, event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    study.selected = checkbox.checked;
   }
   // Method to handle individual study selection
   onSelectStudy(study: any) {
+    study['selected'] = false;
     this.selectedStudy = study;
     this.selectedStudy.fields = this.selectedStudy.fields.map((field: any, index: number) => ({
       ...field,
@@ -85,7 +87,7 @@ export class ExistingStudyComponent implements OnInit {
   }
   // Check if any study is selected for bulk download
   anySelected(): boolean {
-    return this.filteredStudies.some(study => study.selected);
+    return this.filteredStudies.every(study => study.selected);
   }
   onSubmit() {
     if (this.studyForm.valid) {
@@ -144,7 +146,7 @@ refreshStudies() {
     }
 
     // Generate the Excel file for all selected studies
-    this.excelService.createExcelWorkbook(selectedStudies).then((blob:any) => {
+    this.excelService.createBulkExcelWorkbook(selectedStudies).then((blob:any) => {
       saveAs(blob, 'studies_bulk_download.xlsx');
     }).catch(err => {
       console.error('Error generating bulk Excel file:', err);
@@ -153,7 +155,11 @@ refreshStudies() {
 
   // Method to handle download for a single study
   onDownload(study: any) {
-    if (!study.selected) {
+    if (!study.selected || study.selected === undefined) {
+      alert('Please select the checkbox');
+      return;  // Prevent download if checkbox is not selected
+    } else if(this.anySelected() && study.selected){
+      alert('Uncheck bulk download');
       return;  // Prevent download if checkbox is not selected
     }
     this.excelService.createExcelWorkbook([study]).then((blob) => {
@@ -183,6 +189,7 @@ refreshStudies() {
 
   // Method to delete a study (you can extend this with a confirmation modal)
   onDeleteStudy(study: any) {
+    study['selected'] = false;
     if (confirm('Are you sure you want to delete this study?')) {
       this.studyService.deleteStudy(study.studyId).subscribe(
         () => {

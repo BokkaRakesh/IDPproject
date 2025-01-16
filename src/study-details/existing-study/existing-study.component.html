@@ -46,10 +46,10 @@
         <tr *ngFor="let study of filteredStudies" class="cursor-pointer">
           <td>
             <input
-              type="checkbox"
-              [(ngModel)]="study.selected"
-              (change)="onStudySelected(study)"
-            />
+            type="checkbox"
+            [checked]="study.selected"
+            (change)="onStudySelected(study, $event)"
+          />
           </td>
           <td>{{ study.studyId }}</td>
           <td class="text-end">
@@ -69,10 +69,10 @@
 
             <!-- Download Icon with spacing -->
             <i
-              class="bi bi-download text-success ms-2"
-              (click)="onDownload(study)"
-              style="cursor: pointer;"
-            ></i>
+            class="bi bi-download text-success ms-2"
+            (click)="onDownload(study)"
+            style="cursor: pointer;"
+          ></i>
           </td>
         </tr>
       </tbody>
