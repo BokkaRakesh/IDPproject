@@ -25,6 +25,13 @@ export class ExistingStudyComponent implements OnInit {
     { label: 'Complete', value: 'complete' },
   ];
 
+  // Add the statusIcons mapping
+  statusIcons = {
+    notStarted: 'bi bi-exclamation-circle text-warning',
+    inProgress: 'bi bi-arrow-repeat text-primary',
+    complete: 'bi bi-check-circle text-success',
+  };
+
   constructor(
     private studyService: StudyService, 
     private excelService: ExcelServiceImpl,
@@ -53,10 +60,12 @@ export class ExistingStudyComponent implements OnInit {
       this.filteredStudies = this.studies;
     }
   }
+
   onStudySelected(study: any, event: Event) {
     const checkbox = event.target as HTMLInputElement;
     study.selected = checkbox.checked;
   }
+
   // Method to handle individual study selection
   onSelectStudy(study: any) {
     study['selected'] = false;
@@ -67,10 +76,9 @@ export class ExistingStudyComponent implements OnInit {
     }));
     this.initializeForm(); // Initialize the form for the selected study
   }
+
   private initializeForm() {
     // Add keys to fields dynamically before initializing the form
-
-
     const fieldsGroup: any = {};
 
     // Set studyId as disabled
@@ -85,10 +93,12 @@ export class ExistingStudyComponent implements OnInit {
     // Initialize the form group
     this.studyForm = this.fb.group(fieldsGroup);
   }
+
   // Check if any study is selected for bulk download
   anySelected(): boolean {
     return this.filteredStudies.every(study => study.selected);
   }
+
   onSubmit() {
     if (this.studyForm.valid) {
       const formData = this.studyForm.value;
@@ -121,21 +131,21 @@ export class ExistingStudyComponent implements OnInit {
       });
     }
   }
-  // Method to refresh studies from IndexedDB
-refreshStudies() {
-  this.studyService.getStudies().subscribe({
-    next: (studies) => {
-      // Update the studies and filtered studies arrays
-      this.studies = studies;
-      this.filteredStudies = studies;  // If you have any filters applied, update them here
-    },
-    error: (err) => {
-      console.error('Error refreshing studies:', err);
-    }
-  });
-}
 
-  
+  // Method to refresh studies from IndexedDB
+  refreshStudies() {
+    this.studyService.getStudies().subscribe({
+      next: (studies) => {
+        // Update the studies and filtered studies arrays
+        this.studies = studies;
+        this.filteredStudies = studies;  // If you have any filters applied, update them here
+      },
+      error: (err) => {
+        console.error('Error refreshing studies:', err);
+      }
+    });
+  }
+
   // Method to handle bulk download
   onBulkDownload() {
     const selectedStudies = this.filteredStudies.filter(study => study.selected);
@@ -146,7 +156,7 @@ refreshStudies() {
     }
 
     // Generate the Excel file for all selected studies
-    this.excelService.createBulkExcelWorkbook(selectedStudies).then((blob:any) => {
+    this.excelService.createBulkExcelWorkbook(selectedStudies).then((blob: any) => {
       saveAs(blob, 'studies_bulk_download.xlsx');
     }).catch(err => {
       console.error('Error generating bulk Excel file:', err);

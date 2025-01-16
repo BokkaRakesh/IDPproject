@@ -1,6 +1,8 @@
-<div class="mb-4">
-  <div class="input-group">
-    <span class="input-group-text"><i class="bi bi-search"></i></span>
+
+  <div class="input-group mb-3">
+    <span class="input-group-text" id="inputGroup-sizing-sm">
+      <i class="bi bi-search"></i>
+    </span>
     <input
       type="text"
       class="form-control"
@@ -9,7 +11,7 @@
       (ngModelChange)="filterStudies()"
     />
   </div>
-</div>
+
 
 <!-- Export Button for Bulk Download -->
 <div class="mb-3 text-end">
@@ -46,33 +48,28 @@
         <tr *ngFor="let study of filteredStudies" class="cursor-pointer">
           <td>
             <input
-            type="checkbox"
-            [checked]="study.selected"
-            (change)="onStudySelected(study, $event)"
-          />
+              type="checkbox"
+              [checked]="study.selected"
+              (change)="onStudySelected(study, $event)"
+            />
           </td>
           <td>{{ study.studyId }}</td>
           <td class="text-end">
-            <!-- Edit Icon with spacing -->
             <i
               class="bi bi-pencil text-info ms-2"
               (click)="onSelectStudy(study)"
               style="cursor: pointer;"
             ></i>
-
-            <!-- Delete Icon with spacing -->
             <i
               class="bi bi-trash text-danger ms-2"
               (click)="onDeleteStudy(study)"
               style="cursor: pointer;"
             ></i>
-
-            <!-- Download Icon with spacing -->
             <i
-            class="bi bi-download text-success ms-2"
-            (click)="onDownload(study)"
-            style="cursor: pointer;"
-          ></i>
+              class="bi bi-download text-success ms-2"
+              (click)="onDownload(study)"
+              style="cursor: pointer;"
+            ></i>
           </td>
         </tr>
       </tbody>
@@ -81,57 +78,75 @@
 </div>
 
 <!-- Study Form (existing part of the template) -->
-<!-- (This remains the same) -->
-<div *ngIf="studyForm && selectedStudy !==null" class="mt-4">
+<!-- Study Form (existing part of the template) -->
+<div *ngIf="studyForm && selectedStudy !== null" class="mt-4">
   <div class="card shadow-sm">
     <div class="card-header bg-info text-white">
       <h5>Study Form for {{ selectedStudy?.studyId }}</h5>
     </div>
     <div class="card-body">
       <form [formGroup]="studyForm" (ngSubmit)="onSubmit()">
-        <div class="form-group row">
-          <label for="studyId" class="col-form-label col-sm-2 fw-bold">Study ID:</label>
-          <div class="col-sm-10">
-            <input
-              id="studyId"
-              formControlName="studyId"
-              class="form-control"
-              [disabled]="true"
-            />
-          </div>
+        <!-- Study ID Section -->
+        <div class="form-group bordered-block">
+          <label for="studyId" class="col-form-label fw-bold">Study ID:</label>
+          <input
+            id="studyId"
+            formControlName="studyId"
+            class="form-control input-block"
+            [disabled]="true"
+          />
         </div>
 
-        <!-- Loop through study fields dynamically -->
-        <div *ngFor="let field of selectedStudy.fields" class="form-group">
-          <label class="col-form-label fw-bold">{{ field.name }}:</label>
-          <div class="row">
-            <div class="col-sm-6">
-              <select [formControlName]="field.key" class="form-control">
-                <option *ngFor="let option of statusOptions" [value]="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-
-            <div class="col-sm-6">
+        <!-- Scrollable container for dynamic fields -->
+        <div class="form-container scrollable-form-container">
+          <!-- Loop through study fields dynamically -->
+          <div *ngFor="let field of selectedStudy.fields" class="form-group bordered-block">
+            <label class="col-form-label fw-bold">{{ field.name }}:</label>
+            <div class="field-container">
+              <div class="dropdown-container d-flex align-items-center">
+                <!-- Dropdown -->
+                <select [formControlName]="field.key" class="form-control input-block me-2">
+                  <option *ngFor="let option of statusOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+          
+                <!-- Icon based on selected status -->
+                <i
+                  *ngIf="studyForm.get(field.key)?.value"
+                  [ngClass]="{
+                    'bi-check-circle': studyForm.get(field.key)?.value === 'complete',
+                    'bi-clock': studyForm.get(field.key)?.value === 'inProgress',
+                    'bi-x-circle': studyForm.get(field.key)?.value === 'notStarted'
+                  }"
+                  class="status-icon"
+                ></i>
+              </div>
+          
+              <!-- Textarea -->
               <textarea
-                type="text"
                 placeholder="Add comment"
                 formControlName="{{ field.key + '_comment' }}"
-                class="form-control"
+                class="form-control text-area-block"
               ></textarea>
             </div>
           </div>
+          
+          
         </div>
-<!-- {{studyForm | JSON}} -->
-        <button
-          type="submit"
-          [disabled]="studyForm.invalid"
-          class="btn btn-primary mt-3 float-end"
-        >
-          Update
-        </button>
+
+        <!-- Submit Button -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            [disabled]="studyForm.invalid"
+            class="btn btn-primary mt-3 float-end"
+          >
+            Update
+          </button>
+        </div>
       </form>
     </div>
   </div>
 </div>
+
